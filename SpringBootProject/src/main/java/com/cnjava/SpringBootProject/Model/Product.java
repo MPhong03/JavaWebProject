@@ -1,5 +1,6 @@
 package com.cnjava.SpringBootProject.Model;
 
+import java.util.Arrays;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -42,6 +43,9 @@ public class Product {
 	@Column(name = "colors")
 	private String colors;
 	
+	@Column(name = "status")  //0-het hang , 1- con hang
+	private int status;
+	
 	@ManyToOne
 	@JoinColumn(name = "categoryid")
 	private Category Category;
@@ -58,17 +62,27 @@ public class Product {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Product(int productID, String productName, int Price, String description, String imageLink,
-			com.cnjava.SpringBootProject.Model.Category category, com.cnjava.SpringBootProject.Model.Brand brand) {
+	
+
+	public Product(int productID, String productName, int price, String description, String imageLink, String state,
+			String supples, String colors, int status, com.cnjava.SpringBootProject.Model.Category category,
+			com.cnjava.SpringBootProject.Model.Brand brand, List<Comment> comments) {
 		super();
 		ProductID = productID;
 		ProductName = productName;
-		price = Price;
+		this.price = price;
 		Description = description;
 		ImageLink = imageLink;
+		this.state = state;
+		this.supples = supples;
+		this.colors = colors;
+		this.status = status;
 		Category = category;
 		Brand = brand;
+		this.comments = comments;
 	}
+
+
 
 	public int getProductID() {
 		return ProductID;
@@ -126,11 +140,11 @@ public class Product {
 		Brand = brand;
 	}
 	
-	public void addImageUrl(String imageUrl) {
+	public void addImageUrls(List<String> newImageUrls) {
         if (this.ImageLink == null || this.ImageLink.isEmpty()) {
-            this.ImageLink = imageUrl;
+            this.ImageLink = String.join(";", newImageUrls);
         } else {
-            this.ImageLink += ";" + imageUrl;
+            this.ImageLink += ";" + String.join(";", newImageUrls);
         }
     }
 	
@@ -189,5 +203,19 @@ public class Product {
 	public void setComments(List<Comment> comments) {
 		this.comments = comments;
 	}
+
+
+
+	public int getStatus() {
+		return status;
+	}
+
+
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
+	
+	
 	
 }
