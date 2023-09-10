@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.cnjava.SpringBootProject.Service.BrandService;
 import com.cnjava.SpringBootProject.Service.CategoryService;
@@ -29,4 +31,5 @@ public class GlobalController {
         model.addAttribute("categories", categories);
         model.addAttribute("brands", brands);
 	}
+	
 }

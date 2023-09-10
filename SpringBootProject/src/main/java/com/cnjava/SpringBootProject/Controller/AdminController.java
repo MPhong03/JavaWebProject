@@ -1,21 +1,18 @@
 package com.cnjava.SpringBootProject.Controller;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.Principal;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.ResourceUtils;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -43,6 +40,15 @@ import com.cnjava.SpringBootProject.Service.OrderService;
 import com.cnjava.SpringBootProject.Service.ProductService;
 import com.cnjava.SpringBootProject.Service.UserService;
 import com.cnjava.SpringBootProject.Service.ValueService;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.FileContent;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.File;
 
 @Controller
 public class AdminController {
@@ -77,7 +83,7 @@ public class AdminController {
 //    @Autowired
 //    private AdminService adminService;
     
-    private final String uploadDirectory = "static/uploads/";
+//    private final String uploadDirectory = "static/uploads/";
     
     @GetMapping("/admin")
     public String index() {
@@ -166,34 +172,47 @@ public class AdminController {
 		    Brand brand = brandService.getBrandById(productBrand);
 		    Category category = categoryService.getCategoryById(productCategory);
 		    
-		    File staticFolder = ResourceUtils.getFile("classpath:" + uploadDirectory);
-		    String absolutePath = staticFolder.getAbsolutePath();
+//		    File staticFolder = ResourceUtils.getFile("classpath:" + uploadDirectory);
+//		    String absolutePath = staticFolder.getAbsolutePath();
 
-		    String imageUrls = "";
+//		    String imageUrls = "";
+		    
+//		    for (MultipartFile file : imageFiles) {
+//		        if (!file.isEmpty()) {
+//		            String originalFilename = file.getOriginalFilename();
+//		            String filename = originalFilename;
+//
+//		            String fullPath = absolutePath + File.separator + filename;
+//		            Path uploadPath = Paths.get(fullPath);
+//
+//		            if (Files.exists(uploadPath)) {
+//		                FileCopyUtils.copy(file.getBytes(), uploadPath.toFile());
+//		            } else {
+//		                Files.write(uploadPath, file.getBytes());
+//		            }
+//
+//		            String imageUrl = "/uploads/" + filename;
+//		            imageUrls += imageUrl + ";";
+//		        }
+//		    }
+		    
+		    List<String> imageUrls = new ArrayList<>();
+		    
 		    for (MultipartFile file : imageFiles) {
-		        if (!file.isEmpty()) {
-		            String originalFilename = file.getOriginalFilename();
-		            String filename = originalFilename;
-
-		            String fullPath = absolutePath + File.separator + filename;
-		            Path uploadPath = Paths.get(fullPath);
-
-		            if (Files.exists(uploadPath)) {
-		                FileCopyUtils.copy(file.getBytes(), uploadPath.toFile());
-		            } else {
-		                Files.write(uploadPath, file.getBytes());
-		            }
-
-		            String imageUrl = "/uploads/" + filename;
-		            imageUrls += imageUrl + ";";
-		        }
-		    }
+	            if (!file.isEmpty()) {
+	                // Sử dụng Google Drive API để tải hình ảnh lên Google Drive
+	                String imageUrl = uploadImageToDrive(file);
+	                imageUrls.add(imageUrl);
+	            }
+	        }
+		    
+		    String imageLinks = String.join(";", imageUrls);
 
 		    Product product = new Product();
 		    product.setProductName(productName);
 		    product.setPrice(productPrice);
 		    product.setDescription(productDescription);
-		    product.setImageLink(imageUrls);
+		    product.setImageLink(imageLinks);
 		    product.setBrand(brand);
 		    product.setCategory(category);
 		    product.setColors(productColors);
@@ -546,49 +565,58 @@ public class AdminController {
         productToUpdate.setCategory(selectedCategory);
         
         // Thêm hình ảnh
-        String imageUrls = productToUpdate.getImageLink();
-
-        for (MultipartFile file : imageFiles) {
+//        String imageUrls = productToUpdate.getImageLink();
+//
+//        for (MultipartFile file : imageFiles) {
+//            if (!file.isEmpty()) {
+//                String originalFilename = file.getOriginalFilename();
+//                String filename = originalFilename;
+//                
+//                File staticFolder = ResourceUtils.getFile("classpath:" + uploadDirectory);
+//    		    String absolutePath = staticFolder.getAbsolutePath();
+//
+//                String fullPath = absolutePath + File.separator + filename;
+//                Path uploadPath = Paths.get(fullPath);
+//
+//                if (Files.exists(uploadPath)) {
+//                    FileCopyUtils.copy(file.getBytes(), uploadPath.toFile());
+//                } else {
+//                    Files.write(uploadPath, file.getBytes());
+//                }
+//
+//                String imageUrl = ";/uploads/" + filename;
+//                imageUrls += imageUrl;
+//            }
+//        }
+        
+        List<String> imageUrls = new ArrayList<>();
+	    
+	    for (MultipartFile file : imageFiles) {
             if (!file.isEmpty()) {
-                String originalFilename = file.getOriginalFilename();
-                String filename = originalFilename;
-                
-                File staticFolder = ResourceUtils.getFile("classpath:" + uploadDirectory);
-    		    String absolutePath = staticFolder.getAbsolutePath();
-
-                String fullPath = absolutePath + File.separator + filename;
-                Path uploadPath = Paths.get(fullPath);
-
-                if (Files.exists(uploadPath)) {
-                    FileCopyUtils.copy(file.getBytes(), uploadPath.toFile());
-                } else {
-                    Files.write(uploadPath, file.getBytes());
-                }
-
-                String imageUrl = ";/uploads/" + filename;
-                imageUrls += imageUrl;
+                // Sử dụng Google Drive API để tải hình ảnh lên Google Drive
+                String imageUrl = uploadImageToDrive(file);
+                imageUrls.add(imageUrl);
             }
         }
+	    
+	    String imageLinks = String.join(";", imageUrls);
 
 
         // Xóa hình ảnh được đánh dấu
-        if (deleteImages != null && !deleteImages.isEmpty()) {
-        	
-        	String[] imageUrlsArray = imageUrls.split(";");
-            List<String> updatedImageUrls = new ArrayList<>();
-            
-            for (String url : imageUrlsArray) {
-                if (!deleteImages.contains(url)) {
-                    updatedImageUrls.add(url);
-                    System.out.println("[" + url + "]");
-                }
-            }
-            
-            imageUrls = String.join(";", updatedImageUrls);
-            System.out.println("[" + imageUrls + "]");
-        }
+	    if (deleteImages != null && !deleteImages.isEmpty()) {
+	        String[] imageUrlsArray = imageLinks.split(";");
+	        List<String> updatedImageUrls = new ArrayList<>(Arrays.asList(imageUrlsArray));
 
-        productToUpdate.setImageLink(imageUrls);
+	        for (String url : deleteImages) {
+	            updatedImageUrls.remove(url);
+	            System.out.println("[" + url + "]");
+	        }
+
+	        imageLinks = String.join(";", updatedImageUrls);
+	        System.out.println("[" + imageLinks + "]");
+	    }
+
+        productToUpdate.setImageLink(imageLinks);
         
         productService.save(productToUpdate);
                 
@@ -615,4 +643,50 @@ public class AdminController {
 		valueService.deleteById(valueId);
 		return "redirect:/admin/product/" + productId;
 	}
+	
+	private String uploadImageToDrive(MultipartFile imageFile) throws IOException, GeneralSecurityException {
+	    try {
+	        java.io.File tempFile = java.io.File.createTempFile("temp", null);
+
+	        imageFile.transferTo(tempFile);
+
+	        Drive driveService = getDriveService();
+	        File fileMetadata = new File();
+	        fileMetadata.setParents(Collections.singletonList("1DhHFTK3fQJwtAdCLJ_2FXEprHe53aZdP"));
+	        fileMetadata.setName(imageFile.getOriginalFilename());
+
+	        FileContent mediaContent = new FileContent(imageFile.getContentType(), tempFile);
+	        File uploadedFile = driveService.files().create(fileMetadata, mediaContent)
+	                .setFields("id")
+	                .execute();
+
+	        return "https://drive.google.com/uc?id=" + uploadedFile.getId();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+	}
+
+	
+	private Drive getDriveService() throws IOException, GeneralSecurityException {
+        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+
+        Resource p12Resource = new ClassPathResource("static/javaweb-398605-158a1c76b849.p12");
+        java.io.File p12File = p12Resource.getFile();
+
+        GoogleCredential credential = new GoogleCredential.Builder()
+                .setTransport(httpTransport)
+                .setJsonFactory(JacksonFactory.getDefaultInstance())
+                .setServiceAccountId("phony-49@javaweb-398605.iam.gserviceaccount.com")
+                .setServiceAccountPrivateKeyFromP12File(p12File)
+                .setServiceAccountScopes(Collections.singleton(DriveScopes.DRIVE))
+                .build();
+
+        HttpRequestInitializer requestInitializer = credential;
+
+        return new Drive.Builder(httpTransport, JacksonFactory.getDefaultInstance(), requestInitializer)
+                .setApplicationName("SpringBootProject")
+                .build();
+    }
+
 }

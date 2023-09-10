@@ -32,16 +32,16 @@
 
                                                         </ul>
                                                         <ul th:if="${session.email != null}">
-                                                            <li><a href="#">Thông tin tài khoản</a></li>     
-                                                            <li><a href="#">Đơn hàng của tôi</a></li> 
-                                                            <li><a href="#">Giỏ hàng</a></li>
+                                                            <li><a href="/userinfo">Thông tin tài khoản</a></li>     
+                                                            <li><a href="/order?page=1">Đơn hàng của tôi</a></li> 
+                                                            <li><a href="/cart">Giỏ hàng</a></li>
 
                                                         </ul>
                                                     </li>
 
                                                     <li><a  href="">Liên hệ</a></li>
 
-                                                    <li><a  href="">Quản trị viên</a></li>
+                                                    <li><a  href="/admin/products">Quản trị viên</a></li>
 
                                                     <li><a th:if="${session.email != null}" href="/logout">Đăng xuất</a></li>
                                                   
@@ -69,10 +69,10 @@
 
                                 <div class="input-seach" style="width: 100%;">
             
-                                    <form:form action="" method="GET" >
-                                        <input type="text" placeholder="" name="theSearchName"  class="form-control">
+                                    <form action="/searching" method="GET" >
+                                        <input type="text" placeholder="Nhập từ khóa..." name="keyword"  class="form-control">
                                             <button type="submit" class="btn-search-pro"><i class="fa fa-search"> </i></button>
-                                        </form:form>
+                                        </form>
                                 </div>
                                 <div class="clear"></div>
 
@@ -81,7 +81,7 @@
                         <div class="col-8 col-xs-8 col-sm-8 col-md-3 col-lg-5 order-md-2 order-1" style="text-align: right">
                             <a href="#" class="icon-cart">
                                 <div class="icon" >
-                                    <a href=""><i class="fa fa-shopping-cart" aria-hidden="true"></i></a>
+                                    <a href="/cart"><i class="fa fa-shopping-cart" aria-hidden="true"></i></a>
                                     <span></span>
                                 </div>
                                 <div class="info-cart">
@@ -90,7 +90,7 @@
                                 </div>
 
                                <div class="icon" >
-                                    <a href=""><i class="fa fa-user" aria-hidden="true"></i></a>
+                                    <a href="/userinfo"><i class="fa fa-user" aria-hidden="true"></i></a>
                                     <span></span>
                                 </div>
 
@@ -109,17 +109,23 @@
                 <div class="container">
                     <div id="nav-menu">
                         <ul>
-                            <li class="current-menu-item"><a href="">Trang chủ</a></li>
+                            <li class="current-menu-item"><a href="/home">Trang chủ</a></li>
                             <li><a href="">Giới thiệu</a></li>
                             <li>
                                 <a href="#">Danh mục</a>
                                 <ul>
-                                    <li><a href="#">Điện thoại</a></li>
-                                    <li><a href="#">Laptop</a></li>
-                                    <li><a href="#">PC</a></li>
-                                    <li><a href="#">Phụ kiện điện thoại</a></li>
-                                    <li><a href="#">Sản phẩm khác</a></li>
-                                </ul>
+						            <li th:each="category : ${categories}">
+						                <a th:href="@{'/category/' + ${category.CategoryID}}" th:text="${category.CategoryName}"></a>
+						            </li>
+						        </ul>
+                            </li>
+                            <li>
+                                <a href="#">Nhãn hiệu</a>
+                                <ul>
+						            <li th:each="brand : ${brands}">
+						                <a th:href="@{'/brand/' + ${brand.BrandID}}" th:text="${brand.BrandName}"></a>
+						            </li>
+						        </ul>
                             </li>
                             <li><a href="#">Tin tức</a></li>
                             

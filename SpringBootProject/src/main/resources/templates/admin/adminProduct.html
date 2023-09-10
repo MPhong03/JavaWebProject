@@ -148,6 +148,12 @@
 
 				<hr>
 				<h2 class="text-center">Tất cả sản phẩm</h2>
+				
+				<div class="form-group">
+				    <input type="text" class="form-control" id="keyword" name="keyword" placeholder="Tìm kiếm sản phẩm">
+				    <button class="btn btn-primary" id="searchButton">Tìm kiếm</button>
+				</div>
+				
 				<div class="table-responsive">
 					<table class="table table-striped">
 						<thead class="table-dark">
@@ -164,7 +170,7 @@
 								
 							</tr>
 						</thead>
-						<tbody>
+						<tbody id="productTableBody">
 							<!-- Loop through the list of products and display them in table rows -->
 							<tr th:each="product, productIndex : ${products}" class="product-row">
 								<td th:text="${product.ProductID}"></td>

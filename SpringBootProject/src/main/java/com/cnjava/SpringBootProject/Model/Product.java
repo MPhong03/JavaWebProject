@@ -31,7 +31,7 @@ public class Product {
 	@Column(name = "description", length = 2000)
 	private String Description;
 	
-	@Column(name = "imagelink", length = 255)
+	@Column(name = "imagelink", length = 2000)
 	private String ImageLink;
 	
 	@Column(name = "state")

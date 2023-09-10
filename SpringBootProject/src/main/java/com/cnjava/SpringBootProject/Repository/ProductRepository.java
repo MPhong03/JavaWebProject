@@ -1,5 +1,7 @@
 package com.cnjava.SpringBootProject.Repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -49,6 +51,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     
     @Query ("Select count(p) from Product p")
     long countProduct();
-    
-    
+
 }

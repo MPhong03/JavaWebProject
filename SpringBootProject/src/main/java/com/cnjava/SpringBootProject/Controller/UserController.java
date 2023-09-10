@@ -523,13 +523,13 @@ public class UserController {
 	@GetMapping("/orderdetail")
 	public String showOrderDdetail(@RequestParam("id")int id, Model model,  HttpServletRequest request) {
 		
-		 HttpSession session = request.getSession(false);
+		HttpSession session = request.getSession(false);
 		
-		 if(session == null) {
-			 return "redirect:/login"; 
-		 }
+		if(session == null) {
+			return "redirect:/login"; 
+		}
 		 
-		 String email = (String) session.getAttribute("email");
+		String email = (String) session.getAttribute("email");
 		
 		Order or = orderService.getOrderIdMail(email, id);
 		
